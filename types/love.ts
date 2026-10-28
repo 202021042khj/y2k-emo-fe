@@ -43,3 +43,30 @@ export interface Chapter {
   /** Show the emo checkerboard band */
   checkerboard?: boolean;
 }
+
+export type ObjectSlug = "phone" | "cd" | "heart";
+
+export interface DetailShot {
+  /** Public path of the macro still */
+  image: string;
+  alt: string;
+  caption: string;
+  note: string;
+}
+
+export interface ObjectDetail {
+  slug: ObjectSlug;
+  object: OrbitObject;
+  /** Windows-style "properties" rows */
+  properties: readonly { label: string; value: string }[];
+  details: readonly [DetailShot, DetailShot];
+  action: FrameSequence;
+  actionSubtitle: string;
+  next: ObjectSlug;
+}
+
+/** Shared props for the object detail Desktop/Mobile pages */
+export interface ObjectDetailPageProps {
+  detail: ObjectDetail;
+  next: ObjectDetail;
+}

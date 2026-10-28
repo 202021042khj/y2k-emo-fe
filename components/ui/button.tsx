@@ -20,7 +20,7 @@ interface Props extends ComponentPropsWithoutRef<"button"> {
 
 export type ButtonProps = AsChildProps<Props>;
 
-const Button = forwardRef<any, ButtonProps>(
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       asChild,

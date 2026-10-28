@@ -134,7 +134,7 @@ export default function FrameScrubCanvas({ sequence, progress, fit = "cover", cl
         sizes="100vw"
         className={fit === "cover" ? "object-cover" : "object-contain scale-[1.95]"}
       />
-      {!reduceMotion && <canvas ref={canvasRef} aria-hidden className="absolute inset-0 size-full bg-love-void" />}
+      {!reduceMotion && <canvas ref={canvasRef} aria-hidden className="absolute inset-0 size-full" />}
     </div>
   );
 }

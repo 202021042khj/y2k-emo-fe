@@ -11,13 +11,11 @@ const DeferredComponent = ({
   delay = 200,
   children,
 }: DeferredComponentProps) => {
-  const [isDeferred, setIsDeferred] = useState(delay === 0);
+  const [isDeferred, setIsDeferred] = useState(false);
 
   useEffect(() => {
-    if (delay === 0) {
-      setIsDeferred(true);
-      return;
-    }
+    // No delay: render straight away below, no timer and no extra state update needed
+    if (delay === 0) return;
 
     const timeoutId = setTimeout(() => {
       setIsDeferred(true);
@@ -26,7 +24,7 @@ const DeferredComponent = ({
     return () => clearTimeout(timeoutId);
   }, [delay]);
 
-  if (!isDeferred) {
+  if (delay !== 0 && !isDeferred) {
     return null;
   }
 

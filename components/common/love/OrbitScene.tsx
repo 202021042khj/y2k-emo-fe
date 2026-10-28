@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, type CSSProperties } from "react";
 import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
 import ChromeTitle from "@/components/common/love/ChromeTitle";
@@ -7,26 +8,32 @@ import FrameScrubCanvas from "@/components/common/love/FrameScrubCanvas";
 import { sceneId } from "@/constants/love";
 import type { Callout, Device, OrbitObject } from "@/types/love";
 
-interface OrbitSectionProps {
+interface OrbitSceneProps {
   device: Device;
   object: OrbitObject;
+  /** Override the anchor id, when one page shows the same object twice */
+  anchor?: string;
+  /** Link to the object's detail page, shown under the title */
+  detailHref?: string;
+  detailLabel?: string;
   /** Extra overlay content, e.g. the heart's error dialog */
   children?: React.ReactNode;
 }
 
 /**
- * Pinned "product reveal": the camera circles the object a full 360° as you scroll
- * through 250vh, and callouts appear at set angles.
+ * Pinned scrubbed scene: the frames advance with scroll through 250vh, and
+ * callouts appear at set points. Used for the 360° orbits and the detail-page action shots.
  */
-export default function OrbitSection({ device, object, children }: OrbitSectionProps) {
+export default function OrbitScene({ device, object, anchor, detailHref, detailLabel, children }: OrbitSceneProps) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const titleId = `${sceneId(device, object.key)}-title`;
+  const id = anchor ?? sceneId(device, object.key);
+  const titleId = `${id}-title`;
 
   return (
     <section
       ref={ref}
-      id={sceneId(device, object.key)}
+      id={id}
       data-scene
       data-device={device}
       aria-labelledby={titleId}
@@ -44,6 +51,14 @@ export default function OrbitSection({ device, object, children }: OrbitSectionP
           <ChromeTitle id={titleId} className="mt-1 max-w-60 text-[30px] leading-[1.05] md:max-w-none md:text-[64px] md:leading-none">
             {object.title}
           </ChromeTitle>
+          {detailHref && (
+            <Link
+              href={detailHref}
+              className="love-focus mt-3 inline-flex min-h-11 items-center gap-2 font-film text-sm font-bold tracking-[0.04em] text-love-cyan hover:text-love-paper md:mt-4"
+            >
+              {detailLabel} ▶
+            </Link>
+          )}
         </div>
 
         <ul className="absolute inset-x-5 bottom-34 flex flex-col gap-2 md:contents">
