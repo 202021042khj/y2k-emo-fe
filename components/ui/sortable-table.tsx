@@ -9,6 +9,11 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  type DragStartEvent,
+  type Modifier,
+  type SensorDescriptor,
+  type SensorOptions,
+  type UniqueIdentifier,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -119,115 +124,128 @@ SortableTableHeader.displayName = "SortableTableHeader";
 /* -------------------------------------------------------------------------------------------------
  * SortableTableBody
  * -----------------------------------------------------------------------------------------------*/
-interface SortableTableBodyProps {
-  items: any[];
-  children: (item: any, index: number) => React.ReactNode;
+/** Anything with a stable string id can be sorted */
+export interface SortableItem {
+  id: string;
+}
+
+interface SortableTableBodyProps<T extends SortableItem> {
+  items: readonly T[];
+  children: (item: T, index: number) => React.ReactNode;
   className?: string;
 }
 
-export const SortableTableBody = forwardRef<
-  HTMLTableSectionElement,
-  SortableTableBodyProps
->(({ items, children, className }, ref) => (
-  <TableBody ref={ref} className={className}>
-    {items.map((item, index) => (
-      <SortableTableRow key={item.id} id={item.id}>
-        {children(item, index)}
-      </SortableTableRow>
-    ))}
-  </TableBody>
-));
-SortableTableBody.displayName = "SortableTableBody";
+function SortableTableBodyRender<T extends SortableItem>(
+  { items, children, className }: SortableTableBodyProps<T>,
+  ref: React.ForwardedRef<HTMLTableSectionElement>,
+) {
+  return (
+    <TableBody ref={ref} className={className}>
+      {items.map((item, index) => (
+        <SortableTableRow key={item.id} id={item.id}>
+          {children(item, index)}
+        </SortableTableRow>
+      ))}
+    </TableBody>
+  );
+}
+
+// forwardRef drops generics, so restore them on the exported type
+export const SortableTableBody = forwardRef(SortableTableBodyRender) as <T extends SortableItem>(
+  props: SortableTableBodyProps<T> & React.RefAttributes<HTMLTableSectionElement>,
+) => React.ReactElement;
 
 /* -------------------------------------------------------------------------------------------------
  * SortableTable
  * -----------------------------------------------------------------------------------------------*/
-interface SortableTableProps {
-  items: any[];
-  onItemsChange: (items: any[]) => void;
+interface SortableTableProps<T extends SortableItem> {
+  items: readonly T[];
+  onItemsChange: (items: T[]) => void;
   children: React.ReactNode;
   className?: string;
   wrapperClassName?: string;
-  sensors?: any;
-  modifiers?: any[];
-  renderDragOverlay?: (item: any) => React.ReactNode;
+  sensors?: SensorDescriptor<SensorOptions>[];
+  modifiers?: Modifier[];
+  renderDragOverlay?: (item: T | undefined) => React.ReactNode;
 }
 
-export const SortableTable = forwardRef<HTMLDivElement, SortableTableProps>(
-  (
-    {
-      items,
-      onItemsChange,
-      children,
-      className,
-      wrapperClassName,
-      sensors,
-      modifiers = [restrictToParentElement, restrictToVerticalAxis],
-      renderDragOverlay,
-    },
-    ref,
-  ) => {
-    const [activeId, setActiveId] = useState<string | null>(null);
+function SortableTableRender<T extends SortableItem>(
+  {
+    items,
+    onItemsChange,
+    children,
+    className,
+    wrapperClassName,
+    sensors,
+    modifiers = [restrictToParentElement, restrictToVerticalAxis],
+    renderDragOverlay,
+  }: SortableTableProps<T>,
+  ref: React.ForwardedRef<HTMLDivElement>,
+) {
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
 
-    // 기본 센서 설정
-    const defaultSensors = useSensors(
-      useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    );
+  // 기본 센서 설정
+  const defaultSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  );
 
-    const finalSensors = sensors || defaultSensors;
+  const finalSensors = sensors || defaultSensors;
 
-    // 드래그 시작 시 실행되는 함수
-    const handleDragStart = (event: any) => {
-      setActiveId(event.active.id);
-    };
+  // 드래그 시작 시 실행되는 함수
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id);
+  };
 
-    // 드래그 종료 시 실행되는 함수
-    const handleDragEnd = (event: DragEndEvent) => {
-      const { active, over } = event;
+  // 드래그 종료 시 실행되는 함수
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-      if (over && active.id !== over.id) {
-        const newItems = arrayMove(
-          items,
-          items.findIndex((item) => item.id === active.id),
-          items.findIndex((item) => item.id === over.id),
-        );
+    if (over && active.id !== over.id) {
+      const newItems = arrayMove(
+        [...items],
+        items.findIndex((item) => item.id === active.id),
+        items.findIndex((item) => item.id === over.id),
+      );
 
-        onItemsChange(newItems);
-      }
+      onItemsChange(newItems);
+    }
 
-      setActiveId(null);
-    };
+    setActiveId(null);
+  };
 
-    return (
-      <div ref={ref} className={cn("relative w-full", wrapperClassName)}>
-        <div className={cn(className)}>
-          <DndContext
-            sensors={finalSensors}
-            modifiers={modifiers}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
+  return (
+    <div ref={ref} className={cn("relative w-full", wrapperClassName)}>
+      <div className={cn(className)}>
+        <DndContext
+          sensors={finalSensors}
+          modifiers={modifiers}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={items.map((item) => item.id)}
+            strategy={verticalListSortingStrategy}
           >
-            <SortableContext
-              items={items.map((item) => item.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <Table>{children}</Table>
-            </SortableContext>
+            <Table>{children}</Table>
+          </SortableContext>
 
-            {/* 오버레이 영역 */}
-            <DragOverlay modifiers={[restrictToVerticalAxis]}>
-              {activeId && renderDragOverlay
-                ? renderDragOverlay(items.find((item) => item.id === activeId))
-                : null}
-            </DragOverlay>
-          </DndContext>
-        </div>
+          {/* 오버레이 영역 */}
+          <DragOverlay modifiers={[restrictToVerticalAxis]}>
+            {activeId && renderDragOverlay
+              ? renderDragOverlay(items.find((item) => item.id === activeId))
+              : null}
+          </DragOverlay>
+        </DndContext>
       </div>
-    );
-  },
-);
-SortableTable.displayName = "SortableTable";
+    </div>
+  );
+}
+
+// forwardRef drops generics, so restore them on the exported type
+export const SortableTable = forwardRef(SortableTableRender) as <T extends SortableItem>(
+  props: SortableTableProps<T> & React.RefAttributes<HTMLDivElement>,
+) => React.ReactElement;
 
 /* -------------------------------------------------------------------------------------------------
  * SortableTableScrollArea

@@ -1,4 +1,4 @@
-import type { Chapter, Device, OrbitObject, SceneKey } from "@/types/love";
+import type { Chapter, Device, ObjectDetail, ObjectSlug, OrbitObject, SceneKey } from "@/types/love";
 
 /**
  * Desktop and Mobile trees both mount (only one is visible), so anchor ids
@@ -96,5 +96,112 @@ export const CREDITS: readonly { role: string; name: string }[] = [
   { role: "directed by", name: "your 2000s" },
   { role: "starring", name: "a flip phone, a cd player, a chrome heart" },
   { role: "soundtrack", name: "track 07" },
-  { role: "made with", name: "Higgsfield, Figma, Next.js" },
+  { role: "made by", name: "Hojin Kang" },
 ];
+
+export const OBJECT_DETAILS: Record<ObjectSlug, ObjectDetail> = {
+  phone: {
+    slug: "phone",
+    object: PHONE,
+    properties: [
+      { label: "type", value: "clamshell phone, chrome" },
+      { label: "size", value: "fits in a back pocket, barely" },
+      { label: "created", value: "christmas 2004" },
+      { label: "battery", value: "3 days, if nobody texts" },
+      { label: "attributes", value: "bedazzled, cracked, loved" },
+    ],
+    details: [
+      {
+        image: "/details/phone-1.webp",
+        alt: "Macro of the phone hinge covered in tiny hot pink rhinestones.",
+        caption: "the hinge",
+        note: "Two hundred rhinestones, glued on one at a time during a sleepover.",
+      },
+      {
+        image: "/details/phone-2.webp",
+        alt: "Macro of the cracked inner screen with a faint pink heart behind the glass.",
+        caption: "the screen",
+        note: "Dropped once, the night of the text. The heart wallpaper still shows through.",
+      },
+    ],
+    action: {
+      folder: "/frames/phone-action",
+      count: 121,
+      poster: "/frames/phone-action-poster.webp",
+      alt: "The flip phone's screens light up and a message icon starts blinking.",
+    },
+    actionSubtitle: "it lit up. it was not them.",
+    next: "cd",
+  },
+  cd: {
+    slug: "cd",
+    object: CD,
+    properties: [
+      { label: "type", value: "portable cd player, clear" },
+      { label: "size", value: "one burned cd-r, 80 min" },
+      { label: "created", value: "2:04 a.m., spring 2005" },
+      { label: "tracks", value: "18, every one a hint" },
+      { label: "attributes", value: "skips on stairs, never returned" },
+    ],
+    details: [
+      {
+        image: "/details/cd-1.webp",
+        alt: "Macro of a smudged sharpie heart on a rainbow CD surface.",
+        caption: "the disc",
+        note: "Sharpie heart, smudged by a thumb before it dried. Track 07 is circled on the case.",
+      },
+      {
+        image: "/details/cd-2.webp",
+        alt: "Macro of tangled black earbud cables with a silver safety pin clipped on.",
+        caption: "the earbuds",
+        note: "One side stopped working. The safety pin kept the cable from tangling. It didn't.",
+      },
+    ],
+    action: {
+      folder: "/frames/cd-action",
+      count: 121,
+      poster: "/frames/cd-action-poster.webp",
+      alt: "The burned CD spins up inside the clear player and the lid closes.",
+    },
+    actionSubtitle: "press play. skip to 07.",
+    next: "heart",
+  },
+  heart: {
+    slug: "heart",
+    object: HEART,
+    properties: [
+      { label: "type", value: "chrome heart, pendant-sized" },
+      { label: "size", value: "bigger than it looks" },
+      { label: "created", value: "2006, after the top 8 change" },
+      { label: "status", value: "not responding" },
+      { label: "attributes", value: "pinned, wired, cracked" },
+    ],
+    details: [
+      {
+        image: "/details/heart-1.webp",
+        alt: "Macro of black barbed wire wrapped around an iridescent chrome surface.",
+        caption: "the wire",
+        note: "Wrapped on so nothing else gets in. Mostly worked.",
+      },
+      {
+        image: "/details/heart-2.webp",
+        alt: "Macro of a silver safety pin piercing chrome beside a glowing pink crack.",
+        caption: "the pin",
+        note: "A safety pin holds it together. It's the most punk thing it's ever done.",
+      },
+    ],
+    action: {
+      folder: "/frames/heart-action",
+      count: 121,
+      poster: "/frames/heart-action-poster.webp",
+      alt: "The glowing pink crack spreads across the chrome heart and pulses.",
+    },
+    actionSubtitle: "it still beats. it just glows now.",
+    next: "phone",
+  },
+};
+
+export const DETAIL_SCENES = 5;
+
+/** Detail films end at 00:01:36:00 */
+export const DETAIL_TOTAL_FRAMES = 96 * 24;

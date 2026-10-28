@@ -2,13 +2,13 @@
 
 import { useRef, useState } from "react";
 import { motion, useMotionValueEvent, useScroll, useTransform } from "motion/react";
-import { SCENE_ORDER, TOTAL_FRAMES } from "@/constants/love";
+
 import type { Device } from "@/types/love";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-const toTimecode = (progress: number) => {
-  const frame = Math.round(Math.min(1, Math.max(0, progress)) * TOTAL_FRAMES);
+const toTimecode = (progress: number, totalFrames: number) => {
+  const frame = Math.round(Math.min(1, Math.max(0, progress)) * totalFrames);
   const ff = frame % 24;
   const totalSeconds = Math.floor(frame / 24);
   return `${pad(Math.floor(totalSeconds / 3600))}:${pad(Math.floor(totalSeconds / 60) % 60)}:${pad(totalSeconds % 60)}:${pad(ff)}`;
@@ -18,7 +18,17 @@ const toTimecode = (progress: number) => {
  * Letterbox bars with rec dot, scene counter, timecode and scrub bar.
  * Purely decorative: the scenes themselves carry the headings.
  */
-export default function CamcorderOverlaySection({ device }: { device: Device }) {
+interface CamcorderOverlayProps {
+  device: Device;
+  /** Number of scenes on this page */
+  scenes: number;
+  /** Running time at the end of the page, in frames at 24 fps */
+  totalFrames: number;
+  /** Center label; omit when the page renders its own link there */
+  label?: string;
+}
+
+export default function CamcorderOverlay({ device, scenes, totalFrames, label }: CamcorderOverlayProps) {
   const { scrollYProgress, scrollY } = useScroll();
   const progressWidth = useTransform(scrollYProgress, (v) => `${Math.min(100, Math.max(0, v * 100))}%`);
   const [timecode, setTimecode] = useState("00:00:00:00");
@@ -26,7 +36,7 @@ export default function CamcorderOverlaySection({ device }: { device: Device }) 
   const lastFrame = useRef("");
 
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    const tc = toTimecode(v);
+    const tc = toTimecode(v, totalFrames);
     if (tc !== lastFrame.current) {
       lastFrame.current = tc;
       setTimecode(tc);
@@ -43,7 +53,7 @@ export default function CamcorderOverlaySection({ device }: { device: Device }) 
     setScene(current);
   });
 
-  const total = pad(SCENE_ORDER.length);
+  const total = pad(scenes);
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-50 font-film text-sm font-bold tracking-[0.04em] text-love-paper">
@@ -52,7 +62,7 @@ export default function CamcorderOverlaySection({ device }: { device: Device }) 
           <span className="love-blink size-2.5 rounded-full bg-love-pink shadow-[0_0_16px_#ff2e88]" />
           rec
         </span>
-        <span className="hidden flex-1 text-center text-love-chrome md:block">love.exe</span>
+        <span className="hidden flex-1 text-center text-love-chrome md:block">{label}</span>
         <span className="ml-auto md:ml-0">
           {device === "desktop" ? "scene " : ""}
           {pad(scene)}/{total}
