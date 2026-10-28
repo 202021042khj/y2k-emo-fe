@@ -1,4 +1,4 @@
-# khj-fe-template
+# y2k-emo-fe
 
 Personal Next.js App Router starter template — a scaffold to clone for new frontend projects, with an opinionated architecture convention and a ported design system already wired up.
 
